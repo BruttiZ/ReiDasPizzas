@@ -36,6 +36,10 @@ tests/
 
 Os seletores recebem valores e callbacks. Eles não calculam o total do pedido. `utils/pricing.ts` calcula a pizza e a borda; `utils/order.ts` calcula subtotal e entrega; `utils/format.ts` formata reais. `utils/whatsapp.ts` apenas monta mensagens e URLs usando essas funções.
 
+`Cart` mantém o formulário de atendimento e o item em edição. Durante a edição, ele apresenta `ProductModal` com `initialItem`, preservando o formulário na memória. O hook de montagem restaura IDs de sabores, tamanho, borda, quantidade e observação. Salvar mantém o ID do item e o substitui; cancelar não altera o carrinho. Bebidas são itens independentes e não são adicionadas novamente na edição.
+
+`DeliveryFields` apresenta o endereço. `utils/checkout.ts` verifica os campos essenciais e interpreta o valor para troco. A revisão exige rua, número, bairro, cidade e pagamento; dinheiro com troco exige um valor válido, igual ou maior que o total. A mensagem usa `CheckoutDetails` para endereço e troco, além das observações individuais dos itens. Não há confirmação automática do pedido ou cálculo de área atendida.
+
 Os arquivos de dados não dependem de React nem de componentes. `data/menu.ts` é a entrada pública do catálogo; os arquivos em `data/catalog/` importam suas dependências diretamente, evitando ciclos com essa entrada.
 
 O carrinho continua em memória. Fechar e reabrir o carrinho reinicia os campos de atendimento, como antes; recarregar a página limpa o pedido. Nenhuma persistência ou integração nova foi adicionada.

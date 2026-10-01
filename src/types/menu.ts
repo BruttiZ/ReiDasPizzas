@@ -32,8 +32,25 @@ export interface OrderItem {
   quantity: number;
   variant?: string;
   flavors?: string[];
+  flavorIds?: string[];
+  sizeId?: string;
+  note?: string;
   border?: string;
   borderPrice?: number | null;
   unitPrice: number | null;
 }
 export type PaymentPreference = 'Pix' | 'Cartão' | 'Dinheiro';
+
+export interface DeliveryAddress {
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  complement: string;
+  reference: string;
+}
+
+export interface CheckoutDetails {
+  address: DeliveryAddress;
+  changeFor?: number;
+}

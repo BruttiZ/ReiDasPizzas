@@ -1,4 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function fillDelivery(page: Page) {
+  await page.getByLabel('Rua / avenida', { exact: true }).fill('Rua das Flores');
+  await page.getByLabel('Número', { exact: true }).fill('123');
+  await page.getByLabel('Bairro', { exact: true }).fill('Centro');
+  await page.getByLabel('Cidade', { exact: true }).fill('Cidade de teste');
+}
 for (const width of [320, 375, 390, 414, 768, 1366, 1920])
   test('layout e montagem em ' + width + 'px', async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -39,6 +46,7 @@ for (const width of [320, 375, 390, 414, 768, 1366, 1920])
     await page.locator('.cart-trigger').click();
     await expect(page.getByRole('dialog')).toContainText('Abobrinha');
     await page.getByRole('radio', { name: 'Pix', exact: true }).check();
+    await fillDelivery(page);
     await page.getByRole('button', { name: 'Revisar pedido' }).click();
     const link = page.getByRole('link', { name: 'Finalizar pelo WhatsApp' });
     const url = new URL((await link.getAttribute('href'))!);
@@ -83,6 +91,7 @@ test('quantidade, total conhecido, revisão, remoção e Xis Salada confirmado',
   await page.getByLabel('Seu nome').fill('José & Ana');
   await page.getByLabel('Observação do pedido').fill('Sem cebola');
   await page.getByRole('radio', { name: 'Pix', exact: true }).check();
+  await fillDelivery(page);
   await page.getByRole('button', { name: 'Revisar pedido' }).click();
   const url = new URL(
     (await page.getByRole('link', { name: 'Finalizar pelo WhatsApp' }).getAttribute('href'))!,
@@ -144,12 +153,13 @@ test('pagamento selecionado permanece na revisão e no WhatsApp', async ({ page 
   await page.getByRole('radio', { name: 'Pix', exact: true }).check();
   await expect(page.getByRole('button', { name: 'Revisar pedido' })).toBeEnabled();
   await page.getByRole('radio', { name: 'Pix', exact: true }).check();
+  await fillDelivery(page);
   await page.getByRole('button', { name: 'Revisar pedido' }).click();
   await expect(page.locator('.payment-review')).toContainText('Pix');
   const url = new URL(
     (await page.getByRole('link', { name: 'Finalizar pelo WhatsApp' }).getAttribute('href'))!,
   );
-  expect(url.searchParams.get('text')).toContain('Preferência de pagamento: Pix');
+  expect(url.searchParams.get('text')).toContain('Pagamento: Pix');
   await page.getByRole('button', { name: 'Editar pedido' }).click();
   await expect(page.getByRole('radio', { name: 'Pix', exact: true })).toBeChecked();
 });
@@ -178,6 +188,7 @@ test('pizza com borda e bebidas soma sem multiplicar bebidas pela quantidade de 
   await page.locator('.cart-trigger').click();
   await expect(page.locator('.cart-total')).toContainText(/156,00/);
   await page.getByRole('radio', { name: 'Pix', exact: true }).check();
+  await fillDelivery(page);
   await page.getByRole('button', { name: 'Revisar pedido' }).click();
   const url = new URL(
     (await page.getByRole('link', { name: 'Finalizar pelo WhatsApp' }).getAttribute('href'))!,
@@ -228,6 +239,7 @@ test('Família metade Calabresa metade Americana cobra maior sabor, borda e bebi
   await page.locator('.cart-trigger').click();
   await expect(page.locator('.cart-total')).toContainText(/118,00/);
   await page.getByRole('radio', { name: 'Pix', exact: true }).check();
+  await fillDelivery(page);
   await page.getByRole('button', { name: 'Revisar pedido' }).click();
   const url = new URL(
     (await page.getByRole('link', { name: 'Finalizar pelo WhatsApp' }).getAttribute('href'))!,

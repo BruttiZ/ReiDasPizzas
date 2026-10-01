@@ -145,18 +145,16 @@ test('totais nunca apresentam zero como preço desconhecido', () => {
 test('contatos e normalização', () => {
   assert.equal(business.whatsapp, '555533035636');
   assert.equal(business.instagram, '@reidadpizzasca');
-  assert.equal(business.instagramUrl, 'https://www.instagram.com/reidadpizzasca/');
+  assert.equal(business.instagramUrl, 'https://www.instagram.com/reidaspizzasca/');
   assert.equal(normalize('BRÓCOLIS'), 'brocolis');
 });
 test('preferência de pagamento acompanha o pedido sem simular cobrança', () => {
   for (const payment of ['Pix', 'Cartão', 'Dinheiro'] as const) {
     const message = buildWhatsAppMessage([known], '', '', payment);
-    assert.ok(
-      message.includes('Preferência de pagamento: ' + payment + ' (a confirmar no atendimento)'),
-    );
+    assert.ok(message.includes('Pagamento: ' + payment));
     assert.ok(!message.includes('pagamento aprovado'));
   }
-  assert.ok(!buildWhatsAppMessage([known]).includes('Preferência de pagamento:'));
+  assert.ok(!buildWhatsAppMessage([known]).includes('Pagamento:'));
 });
 
 test('pedidos de teste e contato oficial têm destinos separados', () => {
@@ -290,7 +288,7 @@ test('tabela completa, sabores mistos e borda única por pizza', () => {
   };
   assert.equal(orderTotal([item]), 170);
   const message = buildWhatsAppMessage([item]);
-  assert.match(message, /maior valor entre os sabores/);
+  assert.match(message, /2 partes iguais/);
   assert.doesNotMatch(message, /média proporcional|arredondada|valor a confirmar/);
 });
 test('entrega é cobrada uma vez e discriminada mesmo com preço pendente', () => {

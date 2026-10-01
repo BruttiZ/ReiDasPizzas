@@ -13,7 +13,7 @@
   position: absolute;
   display: block;
   color: var(--gold);
-  opacity: 0.40;
+  opacity: 0.4;
   filter: drop-shadow(0 0 6px #e8b65d55);
   animation: food-drift var(--duration) ease-in-out var(--delay) infinite alternate;
 }

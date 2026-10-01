@@ -8,6 +8,10 @@ import { orderSubtotal, orderTotal } from '../../utils/order';
 import { Dialog } from '../ui/Dialog';
 import { CartItem } from './CartItem';
 import { WhatsAppIcon } from '../ui/WhatsAppIcon';
+import { products } from '../../data/menu';
+import ProductModal from '../product/ProductModal';
+import { DeliveryFields } from './DeliveryFields';
+import { emptyAddress, isAddressComplete, parseChangeAmount } from '../../utils/checkout';
 export default function Cart({
   items,
   onChange,
@@ -21,8 +25,31 @@ export default function Cart({
   const [note, setNote] = useState('');
   const [review, setReview] = useState(false);
   const [payment, setPayment] = useState<PaymentPreference | null>(null);
+  const [address, setAddress] = useState({ ...emptyAddress });
+  const [needsChange, setNeedsChange] = useState(false);
+  const [changeInput, setChangeInput] = useState('');
+  const [error, setError] = useState('');
+  const [editingItem, setEditingItem] = useState<OrderItem | null>(null);
   const total = orderTotal(items);
   const subtotal = orderSubtotal(items);
+  const changeFor = payment === 'Dinheiro' && needsChange ? parseChangeAmount(changeInput) : null;
+  const checkoutDetails = { address, changeFor: changeFor ?? undefined };
+
+  if (editingItem) {
+    const product = products.find((product) => product.id === editingItem.productId);
+    if (product)
+      return (
+        <ProductModal
+          key={editingItem.id}
+          product={product}
+          initialItem={editingItem}
+          onClose={() => setEditingItem(null)}
+          onAdd={(updated) =>
+            onChange(items.map((item) => (item.id === updated.id ? updated : item)))
+          }
+        />
+      );
+  }
   return (
     <Dialog title={review ? 'Revise seu pedido' : 'Seu pedido'} onClose={onClose}>
       {items.length === 0 ? (
@@ -42,6 +69,7 @@ export default function Cart({
                 key={item.id}
                 item={item}
                 review={review}
+                onEdit={() => setEditingItem(item)}
                 onRemove={() => onChange(items.filter((current) => current.id !== item.id))}
                 onQuantityChange={(quantity) =>
                   onChange(
@@ -70,7 +98,30 @@ export default function Cart({
             </div>
           </section>
           {!review ? (
-            <div className="cart-checkout">
+            <form
+              className="cart-checkout"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!isAddressComplete(address)) {
+                  setError('Preencha rua, número, bairro e cidade.');
+                  return;
+                }
+                if (!payment) {
+                  setError('Escolha a forma de pagamento.');
+                  return;
+                }
+                if (
+                  payment === 'Dinheiro' &&
+                  needsChange &&
+                  (changeFor === null || (total !== null && changeFor < total))
+                ) {
+                  setError('Informe um valor para troco igual ou maior que o total do pedido.');
+                  return;
+                }
+                setError('');
+                setReview(true);
+              }}
+            >
               <label className="field">
                 Seu nome <span className="muted">(opcional)</span>
                 <input
@@ -80,6 +131,13 @@ export default function Cart({
                   onChange={(e) => setName(e.target.value)}
                 />
               </label>
+              <DeliveryFields
+                address={address}
+                onChange={(value) => {
+                  setAddress(value);
+                  setError('');
+                }}
+              />
               <label className="field">
                 Observação do pedido <span className="muted">(opcional)</span>
                 <textarea
@@ -103,25 +161,63 @@ export default function Cart({
                         type="radio"
                         name="payment"
                         checked={payment === method}
-                        onChange={() => setPayment(method)}
+                        onChange={() => {
+                          setPayment(method);
+                          setError('');
+                        }}
                       />
                       <span>{method}</span>
                     </label>
                   ))}
                 </div>
               </fieldset>
-              <button
-                className="button primary full"
-                disabled={!payment}
-                onClick={() => setReview(true)}
-              >
+              {payment === 'Dinheiro' && (
+                <div className="cash-change">
+                  <label className="cash-change-toggle">
+                    <input
+                      type="checkbox"
+                      checked={needsChange}
+                      onChange={(event) => {
+                        setNeedsChange(event.target.checked);
+                        setError('');
+                      }}
+                    />
+                    Precisa de troco?
+                  </label>
+                  {needsChange ? (
+                    <label className="field">
+                      Troco para quanto?
+                      <input
+                        required
+                        inputMode="decimal"
+                        maxLength={12}
+                        value={changeInput}
+                        onChange={(event) => {
+                          setChangeInput(event.target.value);
+                          setError('');
+                        }}
+                        placeholder="Ex.: 100,00"
+                        aria-describedby={error ? 'checkout-error' : undefined}
+                      />
+                    </label>
+                  ) : (
+                    <p className="small muted">Pagamento em dinheiro, sem necessidade de troco.</p>
+                  )}
+                </div>
+              )}
+              {error && (
+                <p className="notice" role="alert" id="checkout-error">
+                  {error}
+                </p>
+              )}
+              <button type="submit" className="button primary full" disabled={!payment}>
                 Revisar pedido
               </button>
-              <button className="button text-button full" onClick={onClose}>
+              <button type="button" className="button text-button full" onClick={onClose}>
                 <ArrowLeft size={16} />
                 Voltar ao cardápio
               </button>
-            </div>
+            </form>
           ) : (
             <>
               <div className="cart-customer-details">
@@ -135,6 +231,33 @@ export default function Cart({
                 {name && (
                   <p>
                     <strong>Nome:</strong> {name}
+                  </p>
+                )}
+                <div className="delivery-review">
+                  <strong>Endereço de entrega</strong>
+                  <p>
+                    {address.street}, {address.number}
+                    <br />
+                    {address.neighborhood} · {address.city}
+                  </p>
+                  {address.complement.trim() && <p>Complemento: {address.complement}</p>}
+                  {address.reference.trim() && <p>Referência: {address.reference}</p>}
+                </div>
+                {payment === 'Dinheiro' && (
+                  <p>
+                    {changeFor === null ? (
+                      'Não precisa de troco.'
+                    ) : (
+                      <>
+                        Troco para: {money(changeFor)}
+                        {total !== null && (
+                          <>
+                            <br />
+                            Troco previsto: {money(changeFor - total)}
+                          </>
+                        )}
+                      </>
+                    )}
                   </p>
                 )}
                 {note && (
@@ -151,7 +274,7 @@ export default function Cart({
                 <a
                   className="button primary full"
                   href={buildOrderWhatsAppUrl(
-                    buildWhatsAppMessage(items, name, note, payment ?? undefined),
+                    buildWhatsAppMessage(items, name, note, payment ?? undefined, checkoutDetails),
                   )}
                   target="_blank"
                   rel="noopener noreferrer"

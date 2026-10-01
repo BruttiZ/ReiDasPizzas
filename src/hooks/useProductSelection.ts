@@ -2,17 +2,29 @@ import { useState } from 'react';
 import { borders, drinks, pizzas, pizzaSizes, calzoneSizes } from '../data/menu';
 import type { Product, OrderItem } from '../types/menu';
 import { pizzaPrice, withBorder } from '../utils/pricing';
-export function useProductSelection(product: Product) {
+export function useProductSelection(product: Product, initialItem?: OrderItem) {
   const isCalzone = product.category === 'calzones';
   const isPizza = ['tradicionais', 'premium', 'doces', 'doces-premium'].includes(product.category);
   const customizable = isPizza || isCalzone;
   const sizes = isCalzone ? calzoneSizes : pizzaSizes;
-  const [sizeId, setSizeId] = useState(sizes[0].id);
-  const [variant, setVariant] = useState('Regular');
+  const [sizeId, setSizeId] = useState(
+    initialItem?.sizeId ??
+      sizes.find((size) => size.name === initialItem?.variant)?.id ??
+      sizes[0].id,
+  );
+  const [variant, setVariant] = useState(initialItem?.variant ?? 'Regular');
   const initialFlavor = isCalzone ? product.id.replace('calzone-', '') : product.id;
-  const [selected, setSelected] = useState<string[]>(customizable ? [initialFlavor] : []);
-  const [border, setBorder] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  const [selected, setSelected] = useState<string[]>(
+    initialItem?.flavorIds ??
+      (initialItem?.flavors
+        ? initialItem.flavors.map((name) => pizzas.find((pizza) => pizza.name === name)!.id)
+        : customizable
+          ? [initialFlavor]
+          : []),
+  );
+  const [border, setBorder] = useState(initialItem?.border ?? '');
+  const [quantity, setQuantity] = useState(initialItem?.quantity ?? 1);
+  const [note, setNote] = useState(initialItem?.note ?? '');
   const [drinkQuantities, setDrinkQuantities] = useState<Record<string, number>>({});
   const size = sizes.find((s) => s.id === sizeId)!;
   const selectedBorder = borders.find((b) => b.name === border);
@@ -50,10 +62,13 @@ export function useProductSelection(product: Product) {
 
   function addToOrder(onAdd: (item: OrderItem) => void) {
     onAdd({
-      id: crypto.randomUUID(),
+      id: initialItem?.id ?? crypto.randomUUID(),
       productId: product.id,
       name: isPizza ? 'Pizza' : isCalzone ? 'Calzone' : product.name,
       quantity,
+      note: note.trim() || undefined,
+      sizeId: customizable ? sizeId : undefined,
+      flavorIds: customizable ? [...selected] : undefined,
       variant: customizable ? size.name : product.category === 'xis' ? variant : undefined,
       flavors: customizable
         ? selected.map((id) => pizzas.find((p) => p.id === id)!.name)
@@ -86,6 +101,8 @@ export function useProductSelection(product: Product) {
     border,
     setBorder,
     quantity,
+    note,
+    setNote,
     setQuantity,
     drinkQuantities,
     size,

@@ -13,10 +13,12 @@ export default function ProductModal({
   product,
   onClose,
   onAdd,
+  initialItem,
 }: {
   product: Product;
   onClose: () => void;
   onAdd: (item: OrderItem) => void;
+  initialItem?: OrderItem;
 }) {
   const {
     isCalzone,
@@ -31,6 +33,8 @@ export default function ProductModal({
     border,
     setBorder,
     quantity,
+    note,
+    setNote,
     setQuantity,
     drinkQuantities,
     size,
@@ -42,7 +46,7 @@ export default function ProductModal({
     addToOrder,
     toggleFlavor,
     changeDrinkQuantity,
-  } = useProductSelection(product);
+  } = useProductSelection(product, initialItem);
   if (product.category === 'bordas')
     return (
       <Dialog title={product.name} onClose={onClose}>
@@ -55,7 +59,11 @@ export default function ProductModal({
       </Dialog>
     );
   return (
-    <Dialog title={product.name} onClose={onClose} wide={customizable}>
+    <Dialog
+      title={initialItem ? 'Editar item: ' + product.name : product.name}
+      onClose={onClose}
+      wide={customizable}
+    >
       <div className={customizable ? 'product-builder' : 'product-builder simple-builder'}>
         <div className="product-builder-options">
           {product.description && <p className="muted modal-description">{product.description}.</p>}
@@ -106,7 +114,17 @@ export default function ProductModal({
               Selecione pelo menos um sabor.
             </p>
           )}
-          {(customizable || product.category === 'xis') && (
+          <label className="field">
+            Observação deste item <span className="muted">(opcional)</span>
+            <textarea
+              rows={2}
+              maxLength={500}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="Ex.: sem cebola na metade Calabresa"
+            />
+          </label>
+          {!initialItem && (customizable || product.category === 'xis') && (
             <DrinkSelector
               quantities={drinkQuantities}
               total={drinkTotal}
@@ -185,8 +203,13 @@ export default function ProductModal({
             }}
           >
             <Plus size={18} />
-            Adicionar ao pedido
+            {initialItem ? 'Salvar alterações' : 'Adicionar ao pedido'}
           </button>
+          {initialItem && (
+            <button type="button" className="button text-button full" onClick={onClose}>
+              Cancelar edição
+            </button>
+          )}
         </aside>
       </div>
     </Dialog>

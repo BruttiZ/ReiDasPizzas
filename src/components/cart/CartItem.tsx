@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
 import type { OrderItem } from '../../types/menu';
 import { money } from '../../utils/format';
 import { Quantity } from '../ui/Quantity';
@@ -6,9 +6,10 @@ interface CartItemProps {
   item: OrderItem;
   review: boolean;
   onRemove: () => void;
+  onEdit: () => void;
   onQuantityChange: (quantity: number) => void;
 }
-export function CartItem({ item, review, onRemove, onQuantityChange }: CartItemProps) {
+export function CartItem({ item, review, onRemove, onEdit, onQuantityChange }: CartItemProps) {
   return (
     <article className="cart-item">
       <div className="cart-item-heading">
@@ -17,12 +18,27 @@ export function CartItem({ item, review, onRemove, onQuantityChange }: CartItemP
           {item.variant ? ' · ' + item.variant : ''}
         </h3>
         {!review && (
-          <button className="icon-button" aria-label={'Remover ' + item.name} onClick={onRemove}>
-            <Trash2 size={18} />
-          </button>
+          <div className="cart-item-actions">
+            <button
+              type="button"
+              className="icon-button"
+              aria-label={'Editar ' + item.name}
+              onClick={onEdit}
+            >
+              <Pencil size={17} />
+            </button>
+            <button className="icon-button" aria-label={'Remover ' + item.name} onClick={onRemove}>
+              <Trash2 size={18} />
+            </button>
+          </div>
         )}
       </div>
       {item.flavors && <p>{item.flavors.join(' / ')}</p>}
+      {item.note && (
+        <p className="customer-note">
+          <strong>Observação do item:</strong> {item.note}
+        </p>
+      )}
       {item.border && (
         <p>
           Borda: {item.border}{' '}

@@ -70,12 +70,14 @@ Use `npm run format` para formatar, `npm run format:check` para verificar o padr
 
 1. O cliente escolhe o produto.
 2. Define tamanho/versão, sabores permitidos e quantidade. Para pizzas pode escolher uma borda.
-3. Adiciona ao pedido e revisa os itens.
-4. Pode informar nome e observação.
-5. O botão Finalizar pelo WhatsApp abre uma nova aba para o número oficial, com a mensagem codificada.
+3. Pode incluir uma observação por item e adicionar ao pedido. O botão Editar reabre tamanho, sabores, borda, quantidade e observação; salvar substitui apenas aquele item. Bebidas são editadas separadamente.
+4. Informa rua, número (ou S/N), bairro e cidade. Complemento, referência, nome e observação geral são opcionais. Escolhe pagamento e, em dinheiro, pode indicar o valor para troco, que deve ser igual ou maior que o total.
+5. Revisa itens, endereço e pagamento. O botão Finalizar pelo WhatsApp abre uma nova aba para o destino configurado em `business.orderWhatsapp`, com a mensagem organizada e codificada.
 6. O cliente envia a mensagem no WhatsApp e combina os detalhes com a pizzaria.
 
 O site não envia mensagens automaticamente, não confirma pedidos e não processa pagamentos. Abrir o link mantém o carrinho. Carrinho e dados pessoais existem somente na memória da página; recarregar a página apaga esses dados.
+
+A edição de um item preserva os dados já preenchidos no carrinho; cancelar descarta apenas as mudanças daquela edição. Fechar o carrinho reinicia os campos de atendimento ao reabri-lo. A taxa continua sendo R$ 10 por pedido; área atendida e prazo são confirmados pela pizzaria.
 
 Preços confirmados: tradicionais e doces tradicionais 40/50/60/70; Premium e doces Premium 50/60/70/80, na ordem Broto/Média/Grande/Família. Sabores mistos cobram o maior valor escolhido para o tamanho, sem média nem soma de sabores. Todas as oito bordas recheadas custam 6/8/10/15, adicionadas uma única vez por pizza; sem borda não há adicional. Xis Salada Regular custa R$ 28,00 e Calota R$ 68,00. Calzones mantêm R$ 50,00 e R$ 60,00. Fonte central: src/data/confirmed-prices.ts.
 
