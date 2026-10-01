@@ -51,19 +51,20 @@ npm run test:e2e
 
 Os testes verificam contagens e categorias, preços de todos os Xis, preços pendentes, limites de sabores, calzones, codificação da mensagem de WhatsApp, busca, carrinho e responsividade em 320, 375, 390, 414, 768, 1366 e 1920 px.
 
-## Estrutura
+## Estrutura e manutenção
 
-- `src/data/menu.ts`: fonte central dos produtos, ingredientes, categorias, tamanhos e preços.
-- `src/data/config.ts`: contatos oficiais e caminho da logo.
-- `src/types/menu.ts`: tipos de produto, tamanho e item do pedido.
-- `src/utils/whatsapp.ts`: formatação de valores, total e mensagem/link do WhatsApp.
-- `src/components/ProductModal.tsx`: tamanho, seleção de sabores, borda, variação e quantidade.
-- `src/components/Cart.tsx`: alteração, remoção, nome/observação opcionais e revisão.
-- `src/components/UI.tsx`: marca, modal acessível, quantidade e ícone do WhatsApp.
-- `src/App.tsx`: navegação, abertura, busca, cardápio, guia de tamanhos e contatos.
-- `public/brand/`: arquivos oficiais da marca, copiados sem modificar proporções, cores ou composição.
+A organização de pastas e as responsabilidades estão descritas em [docs/architecture.md](docs/architecture.md).
+
+- `src/App.tsx`: composição da página e abertura dos modais.
+- `src/components/`: componentes separados por área — layout, home, menu, product, cart e ui.
+- `src/hooks/`: estado do carrinho, montagem e avisos.
+- `src/data/catalog/`: produtos, ingredientes, categorias e tamanhos.
+- `src/data/confirmed-prices.ts`: preços de pizzas e bordas.
+- `src/utils/`: cálculos, busca, formatação e integração com WhatsApp.
+- `src/styles/`: estilos globais e da abertura.
 - `tests/`: testes de dados e navegador.
-- `Dockerfile`, `compose.yaml`, `nginx.conf`: execução local com Docker.
+
+Use `npm run format` para formatar, `npm run format:check` para verificar o padrão e `npm run typecheck` para validar os tipos.
 
 ## Funcionamento do pedido
 
@@ -76,7 +77,7 @@ Os testes verificam contagens e categorias, preços de todos os Xis, preços pen
 
 O site não envia mensagens automaticamente, não confirma pedidos e não processa pagamentos. Abrir o link mantém o carrinho. Carrinho e dados pessoais existem somente na memória da página; recarregar a página apaga esses dados.
 
-Os preços de pizza foram atualizados a partir da tabela Família e da autorização expressa para aplicar os patamares aos demais tamanhos: Família 70 corresponde a Broto 40, Média 50 e Grande 60; Família 80 corresponde a Broto 50, Média 60 e Grande 70. A tabela por categoria foi posteriormente confirmada diretamente: todos os sabores tradicionais, inclusive doces tradicionais, usam 40/50/60/70 e os Premium usam 50/60/70/80. A fonte central é src/data/confirmed-prices.ts. Combinações são cobradas pela média proporcional em partes iguais. Frações de centavo são arredondadas PARA CIMA no preço unitário da pizza, conforme confirmação expressa. Borda é somada depois e a quantidade multiplica esse valor; bebidas têm quantidades independentes. Doce de leite, Avelã e Xis Salada Regular permanecem com preço pendente. Se qualquer item tiver preço pendente, o total inteiro é apresentado como “valor a confirmar pelo WhatsApp”. Valores conhecidos permanecem identificados por item. Calzones seguem os preços informados de R$ 50,00 e R$ 60,00.
+Preços confirmados: tradicionais e doces tradicionais 40/50/60/70; Premium e doces Premium 50/60/70/80, na ordem Broto/Média/Grande/Família. Sabores mistos cobram o maior valor escolhido para o tamanho, sem média nem soma de sabores. Todas as oito bordas recheadas custam 6/8/10/15, adicionadas uma única vez por pizza; sem borda não há adicional. Xis Salada Regular custa R$ 28,00 e Calota R$ 68,00. Calzones mantêm R$ 50,00 e R$ 60,00. Fonte central: src/data/confirmed-prices.ts.
 
 Os 80 sabores de pizza estão disponíveis também para calzones. Limites: Broto 1, Média 2, Grande 3, Família 4; calzones até 2. Ao reduzir o tamanho, a interface informa que mantém os primeiros sabores selecionados.
 
@@ -90,14 +91,12 @@ Conteúdo atualizado: 33 tradicionais, 28 Premium, 12 doces tradicionais, 7 doce
 
 ## Pendências para confirmação
 
-1. Preço regular do Xis Salada. A leitura preliminar de R$ 28,00 não foi usada no site.
 2. Descrições de Carne acebolada, Carne com bacon, Carne com requeijão cremoso e Carne com cheddar.
-3. Preços das bordas Doce de leite e Avelã. As outras seis bordas têm preços confirmados para os quatro tamanhos.
-4. Endereço.
-5. Horários de funcionamento.
-6. Demais regras de entrega (área atendida e detalhes): ainda não informadas. Taxa padrão confirmada: R$ 10 por pedido.
-7. Confirmação operacional de pagamento: Pix, cartão e dinheiro já aparecem como preferências do cliente.
-Carne com requeijão cremoso já tem os preços Premium confirmados pela tabela por categoria e permanece separado de Carne e Catupiry.
+3. Endereço.
+4. Horários de funcionamento.
+5. Demais regras de entrega (área atendida e detalhes): ainda não informadas. Taxa padrão confirmada: R$ 10 por pedido.
+6. Confirmação operacional de pagamento: Pix, cartão e dinheiro já aparecem como preferências do cliente.
+   Carne com requeijão cremoso já tem os preços Premium confirmados pela tabela por categoria e permanece separado de Carne e Catupiry.
 
 As logos oficiais já foram recebidas e integradas; não há pendência impeditiva de marca. Um arquivo com maior resolução pode ser incorporado posteriormente, preservando a identidade.
 
@@ -110,6 +109,7 @@ Title, description, Open Graph, favicon com arquivo oficial, HTML semântico e i
 O Docker Desktop foi encontrado em instalação por usuário, fora do PATH. A primeira tentativa de acesso ao mecanismo retornou “Docker Desktop is unable to start”. O log indicou “Virtual Machine Platform not enabled”, e o WSL retornou `Wsl/CallMsi/Install/REGDB_E_CLASSNOTREG`. O pacote oficial do WSL foi instalado com sucesso (código 0) e a Plataforma de Máquina Virtual foi ativada com sucesso, pendente de reinicialização (código 3010). A tentativa de `docker compose up --build -d` antes de reiniciar ainda retornou “Docker Desktop is unable to start”. Salve seu trabalho, reinicie o Windows, abra o Docker Desktop e execute o Compose novamente. A imagem Docker ainda não pôde ser construída nem testada neste ambiente; somente a sintaxe do Compose foi validada. Não houve reinicialização automática.
 
 Referências oficiais:
+
 - https://docs.docker.com/desktop/setup/install/windows-install/
 - https://learn.microsoft.com/windows/wsl/install
 - https://learn.microsoft.com/windows/wsl/troubleshooting
@@ -131,7 +131,7 @@ Atualização: confirmado o destino temporário de pedidos +55 55 93505-2865 em 
 
 Bebidas: Coca-Cola e Zero lata R$ 6 (volume da lata não informado); Coca-Cola e Zero 600 ml R$ 8; Coca-Cola, Zero, Fanta laranja e Sprite 2 L R$ 15; Charrua 2 L R$ 13. Nenhum sabor específico foi atribuído à Charrua.
 
-Bordas (Broto / Média / Grande / Família): Catupiry, Cheddar e Calabresa 6 / 8 / 10 / 12; Calabresa com Catupiry 8 / 10 / 12 / 14; Chocolate preto e branco 6 / 10 / 12 / 15.
+Bordas (Broto / Média / Grande / Família): todos os oito sabores custam R$ 6 / R$ 8 / R$ 10 / R$ 15.
 
 A montagem permite incluir bebidas como itens separados. Quantidades de bebidas são independentes da quantidade do produto principal. O preço da borda é somado por pizza, sem duplicação no total. Se um componente não tiver preço conhecido, o total permanece a confirmar.
 
@@ -139,13 +139,13 @@ Bordas são exibidas no cardápio com os preços por tamanho, mas só podem ser 
 
 O aviso dinâmico “loja fechada, abre amanhã às 18h30” nas capturas não foi convertido em horário permanente do estabelecimento.
 
-Carne e Catupiry foi adicionado como sabor separado, com composição informada de carne e Catupiry e preços 50/60/70/80. Os valores hipotéticos de Frango e Bacon no exemplo de média não substituem a tabela comercial. Exemplo validado: Família Calabresa + Americana = 75; com borda Chocolate preto = 90; com Charrua 2 L = 103. Média de 70 + 70 + 80 = 73,34 por pizza (arredondamento para cima no centavo).
+Carne e Catupiry permanece como sabor separado, com composição de carne e Catupiry e preços Premium 50/60/70/80. Exemplo: Família Calabresa + Americana = 80; com borda Chocolate preto = 95; com Charrua 2 L = 108, antes da entrega.
 
 ## Entrega fixa confirmada
 
 Taxa de R$ 10 por pedido em business.deliveryFee. O carrinho, a barra mobile e o WhatsApp usam o mesmo total: subtotal dos produtos + uma única taxa. O modal mostra o valor dos itens sendo adicionados e informa que a entrega entra no carrinho. Preços pendentes continuam impedindo a exibição de um total falso. O carrinho vazio não cobra entrega.
 
-Exemplo final: Família Calabresa + Americana 75 + borda Chocolate preto 15 + Charrua 2 L 13 + entrega 10 = R$ 113,00.
+Exemplo final: Família Calabresa + Americana 80 + borda Chocolate preto 15 + Charrua 2 L 13 + entrega 10 = R$ 118,00.
 
 ## Abertura interativa
 

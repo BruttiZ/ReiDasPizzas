@@ -1,0 +1,47 @@
+#root {
+  isolation: isolate;
+}
+.food-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.food-background-icon {
+  position: absolute;
+  display: block;
+  color: var(--gold);
+  opacity: 0.16;
+  animation: food-drift var(--duration) ease-in-out var(--delay) infinite alternate;
+}
+.food-background-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hero-redesign {
+  background: radial-gradient(ellipse at 78% 48%, #e8b65d0c, transparent 52%), #0c0c0c70;
+}
+@keyframes food-drift {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(var(--travel-x), var(--travel-y), 0) rotate(var(--rotation));
+  }
+}
+@media (max-width: 700px) {
+  .food-background-icon {
+    opacity: 0.12;
+  }
+  .food-background-icon:nth-child(n + 11) {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .food-background-icon {
+    animation: none;
+  }
+}
