@@ -47,6 +47,12 @@ const decorations = [
   ['xis', 48, 93, 38, 57, -24],
   ['bottle', 3, 91, 32, 53, -41],
   ['calzone', 18, 28, 30, 47, -10],
+  ['pizza', 14, 68, 34, 56, -18],
+  ['xis', 84, 35, 36, 51, -34],
+  ['bottle', 40, 17, 30, 59, -12],
+  ['calzone', 64, 48, 38, 45, -26],
+  ['pizza', 58, 80, 32, 61, -39],
+  ['bottle', 92, 72, 34, 48, -21],
 ] as const;
 
 export function FoodBackground() {

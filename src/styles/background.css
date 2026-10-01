@@ -13,7 +13,8 @@
   position: absolute;
   display: block;
   color: var(--gold);
-  opacity: 0.16;
+  opacity: 0.40;
+  filter: drop-shadow(0 0 6px #e8b65d55);
   animation: food-drift var(--duration) ease-in-out var(--delay) infinite alternate;
 }
 .food-background-icon svg {
@@ -34,9 +35,9 @@
 }
 @media (max-width: 700px) {
   .food-background-icon {
-    opacity: 0.12;
+    opacity: 0.26;
   }
-  .food-background-icon:nth-child(n + 11) {
+  .food-background-icon:nth-child(n + 15) {
     display: none;
   }
 }
